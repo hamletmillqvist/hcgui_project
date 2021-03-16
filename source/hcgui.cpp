@@ -7,6 +7,12 @@ namespace hcgui
 {
 	DLL SystemState createInstance()
 	{
+		if (instanceActive)
+		{
+			setError("Can only run one instance at a time!");
+			return SystemState::Error;
+		}
+
 		// Store process ID and stdoput handle
 		pid = GetCurrentProcessId();
 		if (!pid)
@@ -22,18 +28,11 @@ namespace hcgui
 			return SystemState::Error;
 		}
 
-		instanceActive = true;
-
-		// Reads console buffer info in order to locate current cursor position
-		CONSOLE_SCREEN_BUFFER_INFO consoleBufferInfo = {0};
-		if (getConsoleBufferInfo(&consoleBufferInfo) != SystemState::OK)
+		if (!initialize())
 		{
+			instanceActive = false;
 			return SystemState::Error;
 		}
-
-		cursorStartPosition = consoleBufferInfo.dwCursorPosition;
-
-		printf("Left: %d\nRight: %d\nTop: %d\nBottom: %d\n", consoleBufferInfo.srWindow.Left, consoleBufferInfo.srWindow.Right, consoleBufferInfo.srWindow.Top, consoleBufferInfo.srWindow.Bottom);
 
 		setError("NO_ERROR\n");
 		return SystemState::OK;
@@ -44,6 +43,16 @@ namespace hcgui
 		instanceActive = false;
 		pid = 0;
 		p_stdout = nullptr;
+	}
+
+	DLL bool checkInstance()
+	{
+		if (!instanceActive)
+		{
+			setError("No instance of HCGUI running!\n");
+			return false;
+		}
+		return true;
 	}
 
 	DLL const char *getError()

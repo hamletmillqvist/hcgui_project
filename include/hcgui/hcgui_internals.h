@@ -37,13 +37,13 @@ namespace hcgui
 		SMALL_RECT WindowSize;
 
 		// Array storing information for all cells within the drawing area
-		CHAR_INFO *p_CellBuffer;
+		CHAR_INFO *p_Buffer;
 
 		// Array size
-		COORD CellBufferSize;
+		COORD BufferCoords;
 
 		// Size of p_CellBuffer
-		uint32_t CellBufferLength;
+		WORD BufferLenght;
 	};
 
 	extern DrawingArea drawingArea;
@@ -57,6 +57,9 @@ namespace hcgui
 	// Internal loop-method used by the t_internalThread.
 	void threadStart();
 
+	// Draws the DrawingArea.p_CellBuffer onto the screen each frame.
+	void onDraw();
+
 	// Method called from threadStart() when a change in window-size is detected.
-	void windowSizeChanged(CONSOLE_SCREEN_BUFFER_INFO &screenBufferInfo);
+	void onWindowSizeChanged(CONSOLE_SCREEN_BUFFER_INFO &screenBufferInfo);
 }

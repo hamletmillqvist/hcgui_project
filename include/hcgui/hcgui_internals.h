@@ -2,6 +2,8 @@
 #include <thread>
 #include <Windows.h>
 
+#include "hcgui_events.h"
+
 namespace hcgui
 {
 	// Enum classed used in call returns.
@@ -31,7 +33,7 @@ namespace hcgui
 	extern COORD cursorStartPosition;
 
 	// Cell drawing area data
-	struct DrawingArea
+	struct DRAWING_AREA
 	{
 		// Last stored window state
 		SMALL_RECT WindowSize;
@@ -46,7 +48,18 @@ namespace hcgui
 		WORD BufferLenght;
 	};
 
-	extern DrawingArea drawingArea;
+	extern hcgui::DRAWING_AREA drawingArea;
+	extern hcgui::EVENT_CONTAINER *p_eventQueue;
+	extern hcgui::EVENT_HANDLER *p_eventHandlers;
+
+	// Triggers event, invoking all subscriber calls.
+	void triggerEvent(hcgui::EVENT_INFO event_info);
+
+	// Add new event to the event queue. Event will be triggered on the next polling loop.
+	void scheduleEvent(hcgui::EVENT_INFO event_info);
+
+	// Poll the next event in the queue.
+	bool pollEvents(hcgui::EVENT_INFO *event_out);
 
 	// Sets last error message to the passed argument string
 	void setError(const char *error_message);
@@ -57,7 +70,7 @@ namespace hcgui
 	// Internal loop-method used by the t_internalThread.
 	void threadStart();
 
-	// Draws the DrawingArea.p_CellBuffer onto the screen each frame.
+	// Draws the DRAWING_AREA.p_CellBuffer onto the screen each frame.
 	void onDraw();
 
 	// Method called from threadStart() when a change in window-size is detected.

@@ -5,6 +5,11 @@
 
 namespace hcgui
 {
+	DLL void CreateWindowsPopup(const char *title, const char *message)
+	{
+		MessageBoxA(NULL, message, title, MB_OK);
+	}
+
 	DLL SystemState createInstance()
 	{
 		if (instanceActive)
@@ -34,15 +39,19 @@ namespace hcgui
 			return SystemState::Error;
 		}
 
-		setError("NO_ERROR\n");
 		return SystemState::OK;
 	}
 
 	DLL void destroyInstance()
 	{
+		if (!instanceActive)
+			return;
+
 		instanceActive = false;
 		pid = 0;
 		p_stdout = nullptr;
+
+		delete p_eventHandlers;
 	}
 
 	DLL bool checkInstance()
@@ -58,6 +67,11 @@ namespace hcgui
 	DLL const char *getError()
 	{
 		return lastError;
+	}
+
+	DLL void resetError()
+	{
+		setError(hcgui::NO_ERROR_STR);
 	}
 
 	DLL SystemState getConsoleBufferInfo(CONSOLE_SCREEN_BUFFER_INFO *address_out)
@@ -79,6 +93,11 @@ namespace hcgui
 
 	DLL SystemState setCursorPosition(int16_t posX, int16_t posY)
 	{
+		return hcgui::setCursorPositionAbsolute(cursorStartPosition.X + posX, cursorStartPosition.Y + posY);
+	}
+
+	DLL SystemState setCursorPositionAbsolute(int16_t posX, int16_t posY)
+	{
 		if (!checkInstance())
 		{
 			return SystemState::Error;
@@ -92,5 +111,91 @@ namespace hcgui
 		}
 
 		return SystemState::OK;
+	}
+
+	DLL DWORD addEventListener(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO))
+	{
+		if (!checkInstance())
+		{
+			return -1;
+		}
+
+		// Get event handler for specified event type
+		hcgui::EVENT_HANDLER &handler = p_eventHandlers[(int)eventType];
+
+		// Get subscriber list for event handler
+		hcgui::EVENT_SUBSCRIPTION_CONTAINER *current_container = handler.p_SubscriberList;
+
+		DWORD subscriber_id = 0;
+
+		// If list is not empty, we go to the last container and attach the new one on top of it
+		if (current_container != nullptr)
+		{
+			subscriber_id = 1;
+			while (current_container->p_Next != nullptr)
+			{
+				subscriber_id++;
+				current_container = current_container->p_Next;
+			}
+
+			current_container->p_Next = new hcgui::EVENT_SUBSCRIPTION_CONTAINER{
+				hcgui::EVENT_SUBSCRIBER{subscriber_id, callback_addr},
+				nullptr};
+		}
+		// Else set the new one as first
+		else
+		{
+			handler.p_SubscriberList = new hcgui::EVENT_SUBSCRIPTION_CONTAINER{
+				hcgui::EVENT_SUBSCRIBER{subscriber_id, callback_addr},
+				nullptr};
+		}
+
+		return subscriber_id;
+	}
+
+	DLL void removeEventListener(hcgui::EventType eventType, WORD subscriber_id)
+	{
+		if (!checkInstance())
+		{
+			return;
+		}
+
+		// Get event handler for specified event type
+		hcgui::EVENT_HANDLER handler = p_eventHandlers[(int)eventType];
+
+		// Get subscriber list for event handler
+		hcgui::EVENT_SUBSCRIPTION_CONTAINER *current_container = handler.p_SubscriberList,
+											*found = nullptr;
+
+		// There are subscriber
+		if (current_container != nullptr)
+		{
+			// Current subscriber is not the one we're looking for
+			if (current_container->Subscriber.ID != subscriber_id)
+			{
+				// Loop untill we find the target
+				while (current_container->p_Next != nullptr)
+				{
+					// Target found is next node
+					if (current_container->p_Next->Subscriber.ID == subscriber_id)
+					{
+						found = current_container->p_Next;
+						current_container->p_Next = current_container->p_Next->p_Next;
+						delete found;
+					}
+					else
+					{
+						current_container = current_container->p_Next;
+					}
+				}
+			}
+			else
+			{
+				found = current_container;
+				current_container = current_container->p_Next;
+
+				delete found;
+			}
+		}
 	}
 }

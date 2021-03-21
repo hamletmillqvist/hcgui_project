@@ -1,5 +1,6 @@
 #include "hcgui/hcgui_internals.h"
 #include "hcgui/hcgui.h"
+#include <csignal>
 
 namespace hcgui
 {
@@ -16,8 +17,8 @@ namespace hcgui
 		{0, 0},
 		0};
 
-	hcgui::EVENT_CONTAINER *p_eventQueue = nullptr;
-	hcgui::EVENT_HANDLER *p_eventHandlers = nullptr;
+	LinkedList eventQueue;
+	hcgui::EventHandler *p_eventHandlers = nullptr;
 
 	void setError(const char *error_message)
 	{
@@ -72,67 +73,47 @@ namespace hcgui
 		}
 
 		// Create event handlers for all possible events to poll
-		p_eventHandlers = new hcgui::EVENT_HANDLER[hcgui::EventType::EVENT_TYPE_COUNT];
+		size_t memsize = sizeof(hcgui::EventHandler) * hcgui::EventType::EVENT_TYPE_COUNT;
+		p_eventHandlers = (hcgui::EventHandler *)malloc(memsize);
 
 		for (int i = 0; i < hcgui::EventType::EVENT_TYPE_COUNT; i++)
 		{
-			EVENT_HANDLER ev_h;
-			ev_h.p_SubscriberList = nullptr;
-
-			p_eventHandlers[i] = ev_h;
+			p_eventHandlers[i] = hcgui::EventHandler((hcgui::EventType)i);
 		}
+
+		eventQueue = LinkedList();
 
 		// Launch internal thread
 		t_internalThread = std::thread(threadStart);
 		return true;
 	}
 
-	void triggerEvent(hcgui::EVENT_INFO event_info)
+	void invokeEvent(hcgui::EVENT_INFO event_info)
 	{
-		hcgui::EVENT_HANDLER handler = p_eventHandlers[(int)event_info.EventType];
-		hcgui::EVENT_SUBSCRIPTION_CONTAINER *current_container = handler.p_SubscriberList;
-
-		bool event_pass_forward = true;
-		while (event_pass_forward && current_container != nullptr)
-		{
-			event_pass_forward = current_container->Subscriber.CALLBACK_ADDR(event_info);
-			current_container = current_container->p_Next;
-		}
+		hcgui::EventHandler handler = p_eventHandlers[(int)event_info.EventType];
+		handler.triggerEvent(event_info);
 	}
 
-	void scheduleEvent(hcgui::EVENT_INFO event_info)
+	void scheduleEvent(hcgui::EVENT_INFO *event_info)
 	{
-		hcgui::EVENT_CONTAINER *new_event = new hcgui::EVENT_CONTAINER{event_info, nullptr};
-
-		// Append event at end of linked list
-		if (p_eventQueue == nullptr)
-		{
-			p_eventQueue = new_event;
-		}
-		else
-		{
-			hcgui::EVENT_CONTAINER *current = p_eventQueue;
-			while (current->p_Next != nullptr)
-			{
-				current = current->p_Next;
-			}
-
-			current->p_Next = new_event;
-		}
+		eventQueue.emplaceNode(event_info);
 	}
 
 	bool pollEvents(hcgui::EVENT_INFO *event_out)
 	{
-		// If there's events in the queue
-		if (p_eventQueue != nullptr)
+		// If queue is not empty
+		if (eventQueue.getCount() > 0)
 		{
-			// Grab first event container in the queue and remove it from the queue
-			hcgui::EVENT_CONTAINER *current = p_eventQueue;
-			p_eventQueue = p_eventQueue->p_Next;
+			// Read node at head and extract object
+			LINKED_NODE *event_node = eventQueue.getHead();
+			hcgui::EVENT_INFO *node_obj = (hcgui::EVENT_INFO *)event_node->p_Object;
 
-			// Read event info and delete the container
-			*event_out = current->INFO;
-			delete current;
+			// Copy event information into the out parameter
+			*event_out = *node_obj;
+
+			// Destroy object and node
+			delete node_obj;
+			eventQueue.removeNode(event_node);
 
 			return true;
 		}
@@ -168,11 +149,11 @@ namespace hcgui
 					COORD prev = drawingArea.BufferCoords;
 					drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
 
-					hcgui::EVENT_INFO ev;
-					ev.EventType = hcgui::EventType::BufferAreaResized;
-					ev.bufferAreaResized.previousSize = prev;
-					ev.bufferAreaResized.newSize = drawingArea.BufferCoords;
-					scheduleEvent(ev);
+					hcgui::EVENT_INFO *new_event = new hcgui::EVENT_INFO();
+					new_event->EventType = hcgui::EventType::BufferAreaResized;
+					new_event->bufferAreaResized.previousSize = prev;
+					new_event->bufferAreaResized.newSize = drawingArea.BufferCoords;
+					scheduleEvent(new_event);
 				}
 			}
 
@@ -181,11 +162,12 @@ namespace hcgui
 				// Trigger the event if it is not internal
 				if (!event.InternalOnly)
 				{
-					triggerEvent(event);
+					invokeEvent(event);
 				}
 				// Handle internal events
 				else
 				{
+					hcgui::CreateWindowsPopup("Not Implemented", "Internal events have not been implemented!");
 				}
 			}
 

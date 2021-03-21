@@ -2,7 +2,8 @@
 #include <thread>
 #include <Windows.h>
 
-#include "hcgui_events.h"
+#include "hcgui/event_handler.h"
+#include "linked_list.h"
 
 namespace hcgui
 {
@@ -49,8 +50,8 @@ namespace hcgui
 	};
 
 	extern hcgui::DRAWING_AREA drawingArea;
-	extern hcgui::EVENT_CONTAINER *p_eventQueue;
-	extern hcgui::EVENT_HANDLER *p_eventHandlers;
+	extern LinkedList eventQueue;
+	extern hcgui::EventHandler *p_eventHandlers;
 
 	// Triggers event, invoking all subscriber calls.
 	void triggerEvent(hcgui::EVENT_INFO event_info);

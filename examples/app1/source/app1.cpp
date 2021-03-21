@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 	}
 
 	// id is used to unsubscribe at a later point
-	DWORD subscription_id = hcgui::addEventListener(hcgui::EventType::BufferAreaResized, &OnBufferResized);
+	DWORD subscription_id = hcgui::addEventSubscriber(hcgui::EventType::BufferAreaResized, &OnBufferResized);
 
 	while (hcgui::checkInstance())
 	{

@@ -17,7 +17,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${HCGUI_DIR}/bin)
 include_directories(${HCGUI_DIR}/include)
 
 # Add project important files
-file(GLOB_RECURSE HEADERS "${HCGUI_DIR}/include/hcgui/*.h")
+file(GLOB_RECURSE HEADERS "${HCGUI_DIR}/include/*.h")
 file(GLOB_RECURSE SOURCES "${HCGUI_DIR}/source/*.cpp")
 
 # Generate DLL file and make DLL available for all example applications

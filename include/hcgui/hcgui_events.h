@@ -60,29 +60,10 @@ namespace hcgui
         bool InternalOnly = false;
     };
 
-    // Used for creating linked lists of EVENT_INFO.
-    struct EVENT_CONTAINER
-    {
-        hcgui::EVENT_INFO INFO;
-        hcgui::EVENT_CONTAINER *p_Next;
-    };
-
     // Contains information about a certain event subscriber and the callback method to invoke.
     struct EVENT_SUBSCRIBER
     {
         DWORD ID;
         bool (*CALLBACK_ADDR)(hcgui::EVENT_INFO);
-    };
-
-    struct EVENT_SUBSCRIPTION_CONTAINER
-    {
-        EVENT_SUBSCRIBER Subscriber;
-        EVENT_SUBSCRIPTION_CONTAINER *p_Next;
-    };
-
-    // Contains a linked list of all event subscribers and the type of events it handles.
-    struct EVENT_HANDLER
-    {
-        EVENT_SUBSCRIPTION_CONTAINER *p_SubscriberList;
     };
 }

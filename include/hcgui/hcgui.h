@@ -1,6 +1,7 @@
 #pragma once
 #include <inttypes.h>
 #include <Windows.h>
+#include <stdint.h>
 #include "hcgui_internals.h"
 
 #ifndef DLLDIR_EX
@@ -36,8 +37,8 @@ namespace hcgui
 	// Moves the cursor to absolute x and y coordinates.
 	extern "C" DLL SystemState setCursorPositionAbsolute(int16_t posX, int16_t posY);
 
-	extern "C" DLL DWORD addEventListener(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO));
-	extern "C" DLL void removeEventListener(hcgui::EventType eventType, WORD callback_id);
+	extern "C" DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO));
+	extern "C" DLL void removeEventSubscriber(hcgui::EventType eventType, uint32_t callback_id);
 
 	extern "C" DLL void CreateWindowsPopup(const char *title, const char *message);
 }

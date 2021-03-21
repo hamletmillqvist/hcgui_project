@@ -113,89 +113,23 @@ namespace hcgui
 		return SystemState::OK;
 	}
 
-	DLL DWORD addEventListener(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO))
+	DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO))
 	{
 		if (!checkInstance())
 		{
 			return -1;
 		}
 
-		// Get event handler for specified event type
-		hcgui::EVENT_HANDLER &handler = p_eventHandlers[(int)eventType];
-
-		// Get subscriber list for event handler
-		hcgui::EVENT_SUBSCRIPTION_CONTAINER *current_container = handler.p_SubscriberList;
-
-		DWORD subscriber_id = 0;
-
-		// If list is not empty, we go to the last container and attach the new one on top of it
-		if (current_container != nullptr)
-		{
-			subscriber_id = 1;
-			while (current_container->p_Next != nullptr)
-			{
-				subscriber_id++;
-				current_container = current_container->p_Next;
-			}
-
-			current_container->p_Next = new hcgui::EVENT_SUBSCRIPTION_CONTAINER{
-				hcgui::EVENT_SUBSCRIBER{subscriber_id, callback_addr},
-				nullptr};
-		}
-		// Else set the new one as first
-		else
-		{
-			handler.p_SubscriberList = new hcgui::EVENT_SUBSCRIPTION_CONTAINER{
-				hcgui::EVENT_SUBSCRIBER{subscriber_id, callback_addr},
-				nullptr};
-		}
-
-		return subscriber_id;
+		return p_eventHandlers[(int)eventType].addSubscriber(callback_addr);
 	}
 
-	DLL void removeEventListener(hcgui::EventType eventType, WORD subscriber_id)
+	DLL void removeEventSubscriber(hcgui::EventType eventType, uint32_t subscriber_id)
 	{
 		if (!checkInstance())
 		{
 			return;
 		}
 
-		// Get event handler for specified event type
-		hcgui::EVENT_HANDLER handler = p_eventHandlers[(int)eventType];
-
-		// Get subscriber list for event handler
-		hcgui::EVENT_SUBSCRIPTION_CONTAINER *current_container = handler.p_SubscriberList,
-											*found = nullptr;
-
-		// There are subscriber
-		if (current_container != nullptr)
-		{
-			// Current subscriber is not the one we're looking for
-			if (current_container->Subscriber.ID != subscriber_id)
-			{
-				// Loop untill we find the target
-				while (current_container->p_Next != nullptr)
-				{
-					// Target found is next node
-					if (current_container->p_Next->Subscriber.ID == subscriber_id)
-					{
-						found = current_container->p_Next;
-						current_container->p_Next = current_container->p_Next->p_Next;
-						delete found;
-					}
-					else
-					{
-						current_container = current_container->p_Next;
-					}
-				}
-			}
-			else
-			{
-				found = current_container;
-				current_container = current_container->p_Next;
-
-				delete found;
-			}
-		}
+		p_eventHandlers[(int)eventType].removeSubscriber(subscriber_id);
 	}
 }

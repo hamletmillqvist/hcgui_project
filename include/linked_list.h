@@ -13,7 +13,7 @@ struct LINKED_NODE // Node structure for making linked lists. Can be used on its
 class NodeIterator
 {
 private:
-    uint32_t counter = 0;
+    uint32_t counter;
     LINKED_NODE *p_current;
 
 public:
@@ -23,16 +23,17 @@ public:
     LINKED_NODE *getNode();
 
     // Sets current-pointer to the next node or nullptr if no more. Returns TRUE if next one is NOT nullptr.
-    bool next();
+    bool forward();
+    bool hasNext() const;
 };
 
 class LinkedList // Linked list utilizing the LINKED_NODE structure.
 {
 private:
-    LINKED_NODE *p_head = nullptr,
-                *p_tail = nullptr;
+    LINKED_NODE *p_head,
+        *p_tail;
 
-    uint32_t counter = 0;
+    uint32_t counter;
 
 public:
     LinkedList();
@@ -42,6 +43,7 @@ public:
     bool addNode(LINKED_NODE *p_node);
     bool emplaceNode(void *p_object);
     bool removeNode(LINKED_NODE *p_node);
+    bool containsNode(LINKED_NODE *p_node) const;
 
     // Returns the address of the first node in the list.
     LINKED_NODE *getHead();
@@ -54,6 +56,7 @@ public:
 
     uint32_t getCount() const;
 
+    void printList() const;
+
 private:
-    bool findNode(LINKED_NODE *p_node) const;
 };

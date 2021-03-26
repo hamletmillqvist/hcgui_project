@@ -1,4 +1,5 @@
 #include "hcgui/event_handler.h"
+#include <stdio.h>
 
 namespace hcgui
 {
@@ -30,7 +31,7 @@ namespace hcgui
 
     void hcgui::EventHandler::removeSubscriber(uint32_t subscriber_id)
     {
-        for (NodeIterator iterator = this->subscribers.getIterator(); iterator.next();)
+        for (NodeIterator iterator = this->subscribers.getIterator(); iterator.hasNext(); iterator.forward())
         {
             hcgui::EVENT_SUBSCRIBER *obj = (hcgui::EVENT_SUBSCRIBER *)iterator.getObject();
 
@@ -45,14 +46,40 @@ namespace hcgui
 
     void hcgui::EventHandler::triggerEvent(hcgui::EVENT_INFO event_info)
     {
+        subscribers.printList();
         bool event_pass_forward = true;
         NodeIterator iterator = this->subscribers.getIterator();
-        hcgui::EVENT_SUBSCRIBER *subscriber;
 
-        while (event_pass_forward && iterator.next())
+        printf("\n----------------------------->> Event triggered: %d\nSubscribers: %d\n\n", (int)event_info.EventType, this->subscribers.getCount());
+
+        for (NodeIterator iterator = subscribers.getIterator(); iterator.hasNext(); iterator.forward())
         {
-            subscriber = (hcgui::EVENT_SUBSCRIBER *)iterator.getObject();
-            event_pass_forward = subscriber->CALLBACK_ADDR(event_info);
+            printf("Loop begin.\n");
+            LINKED_NODE *current_node = iterator.getNode();
+            printf("Node Address: %p\n", current_node);
+            hcgui::EVENT_SUBSCRIBER *p_subscriber = (hcgui::EVENT_SUBSCRIBER *)current_node->p_Object;
+            printf("Object Address: %p\n", p_subscriber);
+
+            //event_pass_forward = p_subscriber->CALLBACK_ADDR(event_info);
+            //printf("Returned from subscriber call.\n");
         }
+
+        //do
+        //{
+        //    printf("Loop begin.\n");
+        //    LINKED_NODE *current_node = iterator.getNode();
+        //    printf("Node Address: %p\n", current_node);
+        //    if (current_node != nullptr)
+        //    {
+        //        hcgui::EVENT_SUBSCRIBER *p_subscriber = (hcgui::EVENT_SUBSCRIBER *)current_node->p_Object;
+        //        printf("Object Address: %p\n", p_subscriber);
+        //
+        //        //event_pass_forward = p_subscriber->CALLBACK_ADDR(event_info);
+        //        printf("Returned from subscriber call.\n");
+        //    }
+        //
+        //} while (iterator.forward() && event_pass_forward);
+
+        printf("Event finished <<---------------------------\n");
     }
 }

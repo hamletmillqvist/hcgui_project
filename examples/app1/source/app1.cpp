@@ -27,13 +27,13 @@ int main(int argc, char **argv)
 
 	while (hcgui::checkInstance())
 	{
-		if (!strcmp(hcgui::getError(), hcgui::NO_ERROR_STR))
-		{
-			std::stringstream ss;
-			ss << "HCGUI Error caught: " << hcgui::getError();
-			hcgui::CreateWindowsPopup("Buffer was resized!", ss.str().c_str());
-			hcgui::resetError();
-		}
+		//if (!strcmp(hcgui::getError(), hcgui::NO_ERROR_STR))
+		//{
+		//	std::stringstream ss;
+		//	ss << "HCGUI Error caught: " << hcgui::getError();
+		//	hcgui::CreateWindowsPopup("Buffer was resized!", ss.str().c_str());
+		//	hcgui::resetError();
+		//}
 	}
 
 	hcgui::destroyInstance();

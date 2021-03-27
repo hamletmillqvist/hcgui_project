@@ -3,7 +3,7 @@ $localFolder = Split-Path $MyInvocation.MyCommand.Path
 Set-Location $localFolder/build
 
 Write-Host "`n`rGenerating makefiles..."
-cmake . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Debug
+cmake -DDEBUG_BUILD:BOOL=ON -DCMAKE_BUILD_TYPE=DEBUG . -G "MinGW Makefiles"
 
 Write-Host "`n`rCompiling project..."
 mingw32-make.exe

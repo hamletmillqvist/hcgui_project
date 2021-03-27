@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.0.0)
+option(DEBUG_BUILD "Is the build running in DEBUG?" OFF)
 
 # Project settings
 project (
@@ -20,8 +21,15 @@ include_directories(${HCGUI_DIR}/include)
 file(GLOB_RECURSE HEADERS "${HCGUI_DIR}/include/*.h")
 file(GLOB_RECURSE SOURCES "${HCGUI_DIR}/source/*.cpp")
 
-# Generate DLL file and make DLL available for all example applications
-add_library(hcgui SHARED ${SOURCES} ${HEADERS})
+# Choose between linking static (debug) or dynamic (release)
+if (${DEBUG_BUILD}) # Generate static library for testing
+    message("Building static library for debugging.")
+    add_library(hcgui STATIC ${SOURCES} ${HEADERS})
+else () # Generate DLL file and make DLL available for all example applications  
+    message("Building shared library for release.")
+    add_library(hcgui SHARED ${SOURCES} ${HEADERS})
+endif()
+
 target_include_directories(hcgui PUBLIC ${HCGUI_DIR}/bin)
 
 # Compile example applications

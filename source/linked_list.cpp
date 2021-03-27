@@ -15,7 +15,7 @@ LINKED_NODE::LINKED_NODE(void *p_obj)
 /* =========================== NODE ITERATOR =========================== */
 
 NodeIterator::NodeIterator(LINKED_NODE *start)
-    : p_current(nullptr), counter(0)
+    : p_current(start), counter(0)
 {
 }
 
@@ -83,6 +83,7 @@ bool LinkedList::addNode(LINKED_NODE *p_node)
             p_tail = p_node;
             p_head = p_node;
             true;
+            counter++;
         }
 
         // otherwise, does not already exist in the list
@@ -90,6 +91,7 @@ bool LinkedList::addNode(LINKED_NODE *p_node)
         {
             p_tail->p_Next = p_node;
             return true;
+            counter++;
         }
     }
 
@@ -123,6 +125,7 @@ bool LinkedList::removeNode(LINKED_NODE *p_node)
                 delete p_node;
 
                 done = true;
+                counter--;
             }
         }
     }
@@ -163,7 +166,7 @@ uint32_t LinkedList::getCount() const
 
 void LinkedList::printList() const
 {
-    printf("Size: %d {\n", counter);
+    printf("Size: %d {\n", this->counter);
 
     for (NodeIterator iterator = getIterator(); iterator.hasNext(); iterator.forward())
     {

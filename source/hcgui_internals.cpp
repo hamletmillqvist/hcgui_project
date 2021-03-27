@@ -90,9 +90,11 @@ namespace hcgui
 
 	void invokeEvent(hcgui::EVENT_INFO event_info)
 	{
-		printf("Event invoked: %d\n", (int)event_info.EventType);
-		hcgui::EventHandler handler = p_eventHandlers[(int)event_info.EventType];
-		handler.triggerEvent(event_info);
+		//printf("Event invoked: %d\n", (int)event_info.EventType);
+		//hcgui::EventHandler handler = p_eventHandlers[(int)event_info.EventType];
+		//handler.triggerEvent(event_info);
+		//printf("Return from handler.\n");
+		//printf("Return from handler.\n");
 	}
 
 	void scheduleEvent(hcgui::EVENT_INFO *event_info)
@@ -108,13 +110,18 @@ namespace hcgui
 			// Read node at head and extract object
 			LINKED_NODE *event_node = eventQueue.getHead();
 			hcgui::EVENT_INFO *node_obj = (hcgui::EVENT_INFO *)event_node->p_Object;
+			printf("Polled: %p\n", event_node);
 
 			// Copy event information into the out parameter
 			*event_out = *node_obj;
 
 			// Destroy object and node
-			delete node_obj;
-			eventQueue.removeNode(event_node);
+			delete node_obj; // TODO : MEMORY ACCESS VIOLATION
+			printf("DELETE SUCCESS\n");
+			if (eventQueue.removeNode(event_node))
+			{
+				printf("FAILED REMOVING\n");
+			}
 
 			return true;
 		}
@@ -160,10 +167,13 @@ namespace hcgui
 
 			while (pollEvents(&event))
 			{
+				printf("Poll\n");
 				// Trigger the event if it is not internal
 				if (!event.InternalOnly)
 				{
+					printf("Invoking event...........................\n");
 					invokeEvent(event);
+					printf("........................... done invoking\n");
 				}
 				// Handle internal events
 				else
@@ -171,7 +181,7 @@ namespace hcgui
 					hcgui::CreateWindowsPopup("Not Implemented", "Internal events have not been implemented!");
 				}
 			}
-
+			printf("Stopped polling\n");
 			onDraw();
 		}
 

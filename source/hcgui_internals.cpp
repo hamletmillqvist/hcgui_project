@@ -90,40 +90,39 @@ namespace hcgui
 
 	void invokeEvent(hcgui::EVENT_INFO event_info)
 	{
-		//printf("Event invoked: %d\n", (int)event_info.EventType);
-		//hcgui::EventHandler handler = p_eventHandlers[(int)event_info.EventType];
-		//handler.triggerEvent(event_info);
-		//printf("Return from handler.\n");
-		//printf("Return from handler.\n");
+		printf("-------------------------------> Event invoked: %d\n", (int)event_info.EventType);
+		hcgui::EventHandler handler = p_eventHandlers[(int)event_info.EventType];
+		handler.triggerEvent(event_info);
+		printf("Return from handler. <-------------------------------\n");
 	}
 
 	void scheduleEvent(hcgui::EVENT_INFO *event_info)
 	{
+		printf("Event Scheduled: %d (%p)\n", (int)event_info->EventType, event_info);
 		eventQueue.emplaceNode(event_info);
 	}
 
 	bool pollEvents(hcgui::EVENT_INFO *event_out)
 	{
+		printf("Event Queue Size: %d\n", eventQueue.getCount());
+
 		// If queue is not empty
 		if (eventQueue.getCount() > 0)
 		{
 			// Read node at head and extract object
 			LINKED_NODE *event_node = eventQueue.getHead();
 			hcgui::EVENT_INFO *node_obj = (hcgui::EVENT_INFO *)event_node->p_Object;
-			printf("Polled: %p\n", event_node);
 
 			// Copy event information into the out parameter
 			*event_out = *node_obj;
 
 			// Destroy object and node
 			delete node_obj; // TODO : MEMORY ACCESS VIOLATION
-			printf("DELETE SUCCESS\n");
+
 			if (eventQueue.removeNode(event_node))
 			{
-				printf("FAILED REMOVING\n");
+				return true;
 			}
-
-			return true;
 		}
 		return false;
 	}
@@ -143,6 +142,7 @@ namespace hcgui
 	{
 		hcgui::EVENT_INFO event;
 		CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
+		bool isDone = false;
 
 		// Internal running loop
 		while (instanceActive)
@@ -153,27 +153,28 @@ namespace hcgui
 					screenBufferInfo.srWindow.Bottom != drawingArea.WindowSize.Bottom)
 				{
 					//printf("Prev/New Right: %d/%d\nPrev/New Bottom: %d/%d\n", drawingArea.WindowSize.Right, screenBufferInfo.srWindow.Right, drawingArea.WindowSize.Bottom, screenBufferInfo.srWindow.Bottom);
-					drawingArea.WindowSize = screenBufferInfo.srWindow;
-					COORD prev = drawingArea.BufferCoords;
-					drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
+					if (!isDone)
+					{
+						drawingArea.WindowSize = screenBufferInfo.srWindow;
+						COORD prev = drawingArea.BufferCoords;
+						drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
 
-					hcgui::EVENT_INFO *new_event = new hcgui::EVENT_INFO();
-					new_event->EventType = hcgui::EventType::BufferAreaResized;
-					new_event->bufferAreaResized.previousSize = prev;
-					new_event->bufferAreaResized.newSize = drawingArea.BufferCoords;
-					scheduleEvent(new_event);
+						hcgui::EVENT_INFO *new_event = new hcgui::EVENT_INFO();
+						new_event->EventType = hcgui::EventType::BufferAreaResized;
+						new_event->bufferAreaResized.previousSize = prev;
+						new_event->bufferAreaResized.newSize = drawingArea.BufferCoords;
+						scheduleEvent(new_event);
+						isDone = true;
+					}
 				}
 			}
 
 			while (pollEvents(&event))
 			{
-				printf("Poll\n");
 				// Trigger the event if it is not internal
 				if (!event.InternalOnly)
 				{
-					printf("Invoking event...........................\n");
 					invokeEvent(event);
-					printf("........................... done invoking\n");
 				}
 				// Handle internal events
 				else
@@ -181,7 +182,6 @@ namespace hcgui
 					hcgui::CreateWindowsPopup("Not Implemented", "Internal events have not been implemented!");
 				}
 			}
-			printf("Stopped polling\n");
 			onDraw();
 		}
 

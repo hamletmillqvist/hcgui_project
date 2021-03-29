@@ -50,20 +50,11 @@ namespace hcgui
         bool event_pass_forward = true;
         NodeIterator iterator = this->subscribers.getIterator();
 
-        printf("\n----------------------------->> Event triggered: %d\nSubscribers: %d\n\n", (int)event_info.EventType, this->subscribers.getCount());
-
         for (NodeIterator iterator = subscribers.getIterator(); event_pass_forward && iterator.hasNext(); iterator.forward())
         {
-            printf("Loop begin.\n");
             LINKED_NODE *current_node = iterator.getNode();
-            printf("Node Address: %p\n", current_node);
             hcgui::EVENT_SUBSCRIBER *p_subscriber = (hcgui::EVENT_SUBSCRIBER *)current_node->p_Object;
-            printf("Object Address: %p\n", p_subscriber);
-
             event_pass_forward = p_subscriber->CALLBACK_ADDR(event_info);
-            printf("Returned from subscriber call.\n");
         }
-
-        printf("Event finished <<-----------------------------\n");
     }
 }

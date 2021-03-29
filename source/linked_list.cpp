@@ -1,5 +1,6 @@
 #include "linked_list.h"
 #include <stdio.h>
+
 LINKED_NODE::LINKED_NODE()
 {
     p_Object = nullptr;
@@ -105,28 +106,64 @@ bool LinkedList::emplaceNode(void *p_object)
     {
         LINKED_NODE *p_node = new LINKED_NODE(p_object);
         addNode(p_node);
+        return true;
     }
+    return false;
 }
 
 bool LinkedList::removeNode(LINKED_NODE *p_node)
 {
-    // Argument not null
-    if (p_node != nullptr)
+    // Argument not null and list is not empty
+    if (p_node != nullptr && counter > 0)
     {
-        bool done = false;
-        for (NodeIterator iterator = getIterator(); !done && iterator.hasNext(); iterator.forward())
+        // If target node is the head
+        if (p_head = p_node)
         {
-            LINKED_NODE *node = iterator.getNode();
-            if (node->p_Next == p_node)
-            {
-                node->p_Next = p_node->p_Next;
-                p_node->p_Next = nullptr;
-                p_node->p_Object = nullptr;
-                delete p_node;
+            p_head = nullptr;
 
-                done = true;
-                counter--;
+            // If it is also the tail
+            if (p_tail == p_node)
+            {
+                p_tail = nullptr;
             }
+
+            delete p_node;
+            counter--;
+            return true;
+        }
+        else
+        {
+            bool done = false;
+            for (NodeIterator iterator = getIterator(); !done && iterator.hasNext(); iterator.forward())
+            {
+                LINKED_NODE *current_node = iterator.getNode();
+                if (current_node != nullptr)
+                {
+                    // Next node is the target
+                    if (current_node->p_Next == p_node)
+                    {
+                        printf("Found node during deletion process!\n");
+                        // Link Node before target to the one after the target.
+                        current_node->p_Next = p_node->p_Next;
+
+                        // If the target node is the tail, move tail backwards one step
+                        if (p_tail == p_node)
+                        {
+                            current_node = p_tail;
+                        }
+
+                        // Clean up original node data to more easily perform error checking
+                        p_node->p_Next = nullptr;
+                        p_node->p_Object = nullptr;
+                        delete p_node;
+
+                        // End the loop and decrement the counter
+                        counter--;
+                        done = true;
+                    }
+                }
+            }
+            return done;
         }
     }
     return false;

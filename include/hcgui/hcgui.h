@@ -34,11 +34,16 @@ namespace hcgui
 
 	// Moves the cursor to x and y coordinates relative to active buffer area.
 	extern "C" DLL SystemState setCursorPosition(int16_t posX, int16_t posY);
+
 	// Moves the cursor to absolute x and y coordinates.
 	extern "C" DLL SystemState setCursorPositionAbsolute(int16_t posX, int16_t posY);
 
+	// Add a new subscriber (observer) to an event handler. callback_addr needs to be the function called on event trigger. Returns a callback_id
 	extern "C" DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO));
+
+	// Removes a subscriber (observer) from an event handler. Second arguments needs to be the id of the subscriber to remove.
 	extern "C" DLL void removeEventSubscriber(hcgui::EventType eventType, uint32_t callback_id);
 
+	// Windows only function that creatues a normal popup window with a title and message. Mostly used for debugging right now.
 	extern "C" DLL void CreateWindowsPopup(const char *title, const char *message);
 }

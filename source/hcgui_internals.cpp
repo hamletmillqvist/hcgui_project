@@ -90,22 +90,17 @@ namespace hcgui
 
 	void invokeEvent(hcgui::EVENT_INFO event_info)
 	{
-		printf("-------------------------------> Event invoked: %d\n", (int)event_info.EventType);
 		hcgui::EventHandler handler = p_eventHandlers[(int)event_info.EventType];
 		handler.triggerEvent(event_info);
-		printf("Return from handler. <-------------------------------\n");
 	}
 
 	void scheduleEvent(hcgui::EVENT_INFO *event_info)
 	{
-		printf("Event Scheduled: %d (%p)\n", (int)event_info->EventType, event_info);
 		eventQueue.emplaceNode(event_info);
 	}
 
 	bool pollEvents(hcgui::EVENT_INFO *event_out)
 	{
-		printf("Event Queue Size: %d\n", eventQueue.getCount());
-
 		// If queue is not empty
 		if (eventQueue.getCount() > 0)
 		{
@@ -129,13 +124,13 @@ namespace hcgui
 
 	void onDraw()
 	{
-		//hcgui::setCursorPosition(0, 0);
+		hcgui::setCursorPosition(0, 0);
 
 		SHORT output_row = cursorStartPosition.Y;
 		COORD buffer_origin = {0, 0};
 		SMALL_RECT writeArea = {0, output_row, drawingArea.BufferCoords.X, (SHORT)(output_row + drawingArea.BufferCoords.Y)};
 
-		//WriteConsoleOutput(p_stdout, drawingArea.p_Buffer, drawingArea.BufferCoords, buffer_origin, &writeArea);
+		WriteConsoleOutput(p_stdout, drawingArea.p_Buffer, drawingArea.BufferCoords, buffer_origin, &writeArea);
 	}
 
 	void threadStart() // <- t_internalThread starts here

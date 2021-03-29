@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <Windows.h>
 #include <sstream>
+#include <string>
 #include "hcgui/hcgui.h"
 
 bool OnBufferResized(hcgui::EVENT_INFO event_info)
@@ -36,6 +37,7 @@ int main(int argc, char **argv)
 		}
 	}
 
+	hcgui::removeEventSubscriber(hcgui::EventType::BufferAreaResized, subscription_id);
 	hcgui::destroyInstance();
 	printf("Shutting down...\n");
 	return 0;

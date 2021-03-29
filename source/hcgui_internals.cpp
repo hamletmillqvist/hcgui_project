@@ -9,6 +9,7 @@ namespace hcgui
 	DWORD pid = 0;
 	HANDLE p_stdout = nullptr;
 	COORD cursorStartPosition;
+	char *p_oldBufferContents = nullptr;
 	std::thread t_internalThread;
 
 	hcgui::DRAWING_AREA drawingArea = {
@@ -37,20 +38,6 @@ namespace hcgui
 
 		cursorStartPosition = consoleBufferInfo.dwCursorPosition;
 
-		/*
-			This code block is to circumvent the WriteConsoleOutput limit preventing output outside of current window
-			height. We simply write some newlines in a row to create an area that we can draw onto later on at the
-			onDraw() call.
-		*/
-		{
-			DWORD len = consoleBufferInfo.srWindow.Bottom + 1;
-			char *str = (char *)malloc(sizeof(char) * len);
-			for (WORD i = 0; i < len; i++)
-				str[i] = '\n';
-			str[len - 1] = '\0';
-			printf(str);
-		}
-
 		// We read the buffer info one more time to get the updates information
 		if (getConsoleBufferInfo(&consoleBufferInfo) == hcgui::SystemState::Error)
 		{
@@ -59,10 +46,38 @@ namespace hcgui
 
 		// Setup initial information about the output buffer
 		drawingArea.WindowSize = consoleBufferInfo.srWindow;
-
 		drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
 		drawingArea.BufferLenght = drawingArea.BufferCoords.X * drawingArea.BufferCoords.Y;
 		drawingArea.p_Buffer = new CHAR_INFO[drawingArea.BufferLenght];
+
+		// Save all current console buffer contents inside another buffer array for restoring after exiting
+		uint32_t buffer_content_lenght = consoleBufferInfo.dwSize.X * cursorStartPosition.Y;
+		if (buffer_content_lenght > 0)
+		{
+			DWORD characters_read = 0;
+			COORD first_char_to_read = {0};
+			p_oldBufferContents = (char *)malloc(buffer_content_lenght);
+
+			ReadConsoleOutputCharacterA(p_stdout, p_oldBufferContents, buffer_content_lenght, first_char_to_read, &characters_read);
+			p_oldBufferContents[buffer_content_lenght - 1] = '\0';
+		}
+
+		SetConsoleScreenBufferSize(p_stdout, drawingArea.BufferCoords);
+
+		/*
+			This code block is to circumvent the WriteConsoleOutput limit preventing output outside of current window
+			height. We simply write some newlines in a row to create an area that we can draw onto later on at the
+			onDraw() call.
+		*/
+		//{
+		//	DWORD len = consoleBufferInfo.srWindow.Bottom + 1;
+		//	char *str = (char *)malloc(sizeof(char) * len);
+		//	for (WORD i = 0; i < len; i++)
+		//		str[i] = '\n';
+		//	str[len - 1] = '\0';
+		//	printf(str);
+		//	delete str;
+		//}
 
 		for (int i = 0; i < drawingArea.BufferLenght; i++)
 		{
@@ -124,13 +139,19 @@ namespace hcgui
 
 	void onDraw()
 	{
-		hcgui::setCursorPosition(0, 0);
 
 		SHORT output_row = cursorStartPosition.Y;
 		COORD buffer_origin = {0, 0};
 		SMALL_RECT writeArea = {0, output_row, drawingArea.BufferCoords.X, (SHORT)(output_row + drawingArea.BufferCoords.Y)};
 
+		hcgui::setCursorPosition(0, 0);
 		WriteConsoleOutput(p_stdout, drawingArea.p_Buffer, drawingArea.BufferCoords, buffer_origin, &writeArea);
+	}
+
+	void restoreConsole()
+	{
+		// TODO : restore the console after execution
+		printf("RESTORE CONSOLE OR SOMETHING");
 	}
 
 	void threadStart() // <- t_internalThread starts here
@@ -180,6 +201,6 @@ namespace hcgui
 			onDraw();
 		}
 
-		// todo : clean up window to its original state
+		restoreConsole();
 	}
 }

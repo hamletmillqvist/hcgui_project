@@ -33,6 +33,9 @@ namespace hcgui
 	// Initial cursor starting position when launchin the instance.
 	extern COORD cursorStartPosition;
 
+	// Buffer containing old buffer contents before launching the application.
+	extern char *p_oldBufferContents;
+
 	// Cell drawing area data
 	struct DRAWING_AREA
 	{
@@ -49,8 +52,11 @@ namespace hcgui
 		WORD BufferLenght;
 	};
 
+	// Buffer that contains cell information the be drawn onto the console.
 	extern hcgui::DRAWING_AREA drawingArea;
+	// Linked list of events pending to be invoked by the correct event handlers.
 	extern LinkedList eventQueue;
+	// Array of event handler objects that invokes events for all subscribers.
 	extern hcgui::EventHandler *p_eventHandlers;
 
 	// Triggers event, invoking all subscriber calls.

@@ -93,11 +93,6 @@ namespace hcgui
 
 	DLL SystemState setCursorPosition(int16_t posX, int16_t posY)
 	{
-		return hcgui::setCursorPositionAbsolute(cursorStartPosition.X + posX, cursorStartPosition.Y + posY);
-	}
-
-	DLL SystemState setCursorPositionAbsolute(int16_t posX, int16_t posY)
-	{
 		if (!checkInstance())
 		{
 			return SystemState::Error;

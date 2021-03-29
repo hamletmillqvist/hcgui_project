@@ -32,11 +32,8 @@ namespace hcgui
 	// Read current CONSOLE_SCREEN_BUFFER_INFO from the instance.
 	extern "C" DLL SystemState getConsoleBufferInfo(CONSOLE_SCREEN_BUFFER_INFO *address_out);
 
-	// Moves the cursor to x and y coordinates relative to active buffer area.
+	// Moves the cursor to x and y coordinates on the drawing area.
 	extern "C" DLL SystemState setCursorPosition(int16_t posX, int16_t posY);
-
-	// Moves the cursor to absolute x and y coordinates.
-	extern "C" DLL SystemState setCursorPositionAbsolute(int16_t posX, int16_t posY);
 
 	// Add a new subscriber (observer) to an event handler. callback_addr needs to be the function called on event trigger. Returns a callback_id
 	extern "C" DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO));

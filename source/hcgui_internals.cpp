@@ -1,6 +1,5 @@
 #include "hcgui/hcgui_internals.h"
 #include "hcgui/hcgui.h"
-#include <csignal>
 
 namespace hcgui
 {
@@ -28,7 +27,7 @@ namespace hcgui
 
 	bool initialize()
 	{
-		instanceActive = true;
+		hcgui::instanceActive = true;
 
 		CONSOLE_SCREEN_BUFFER_INFO consoleBufferInfo = {0};
 		if (getConsoleBufferInfo(&consoleBufferInfo) == hcgui::SystemState::Error)
@@ -69,15 +68,16 @@ namespace hcgui
 			height. We simply write some newlines in a row to create an area that we can draw onto later on at the
 			onDraw() call.
 		*/
-		//{
-		//	DWORD len = consoleBufferInfo.srWindow.Bottom + 1;
-		//	char *str = (char *)malloc(sizeof(char) * len);
-		//	for (WORD i = 0; i < len; i++)
-		//		str[i] = '\n';
-		//	str[len - 1] = '\0';
-		//	printf(str);
-		//	delete str;
-		//}
+		{
+			DWORD len = consoleBufferInfo.srWindow.Bottom + 1;
+			char *str = (char *)malloc(sizeof(char) * len);
+			for (WORD i = 0; i < len; i++)
+				str[i] = '\n';
+			str[len - 1] = '\0';
+			printf(str);
+			delete str;
+		}
+		hcgui::setCursorPosition(0, 0);
 
 		for (int i = 0; i < drawingArea.BufferLenght; i++)
 		{
@@ -140,9 +140,8 @@ namespace hcgui
 	void onDraw()
 	{
 
-		SHORT output_row = cursorStartPosition.Y;
 		COORD buffer_origin = {0, 0};
-		SMALL_RECT writeArea = {0, output_row, drawingArea.BufferCoords.X, (SHORT)(output_row + drawingArea.BufferCoords.Y)};
+		SMALL_RECT writeArea = {0, 0, drawingArea.BufferCoords.X, (SHORT)(drawingArea.BufferCoords.Y)};
 
 		hcgui::setCursorPosition(0, 0);
 		WriteConsoleOutput(p_stdout, drawingArea.p_Buffer, drawingArea.BufferCoords, buffer_origin, &writeArea);

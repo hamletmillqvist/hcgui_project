@@ -127,7 +127,7 @@ namespace hcgui
 			*event_out = *node_obj;
 
 			// Destroy object and node
-			delete node_obj; // TODO : MEMORY ACCESS VIOLATION
+			delete node_obj;
 
 			if (eventQueue.removeNode(event_node))
 			{
@@ -139,7 +139,6 @@ namespace hcgui
 
 	void onDraw()
 	{
-
 		COORD buffer_origin = {0, 0};
 		SMALL_RECT writeArea = {0, 0, drawingArea.BufferCoords.X, (SHORT)(drawingArea.BufferCoords.Y)};
 
@@ -150,14 +149,13 @@ namespace hcgui
 	void restoreConsole()
 	{
 		// TODO : restore the console after execution
-		printf("RESTORE CONSOLE OR SOMETHING");
 	}
 
 	void threadStart() // <- t_internalThread starts here
 	{
 		hcgui::EVENT_INFO event;
 		CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
-		bool isDone = false;
+		uint32_t num = 0;
 
 		// Internal running loop
 		while (instanceActive)
@@ -167,20 +165,15 @@ namespace hcgui
 				if (screenBufferInfo.srWindow.Right != drawingArea.WindowSize.Right ||
 					screenBufferInfo.srWindow.Bottom != drawingArea.WindowSize.Bottom)
 				{
-					//printf("Prev/New Right: %d/%d\nPrev/New Bottom: %d/%d\n", drawingArea.WindowSize.Right, screenBufferInfo.srWindow.Right, drawingArea.WindowSize.Bottom, screenBufferInfo.srWindow.Bottom);
-					if (!isDone)
-					{
-						drawingArea.WindowSize = screenBufferInfo.srWindow;
-						COORD prev = drawingArea.BufferCoords;
-						drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
+					drawingArea.WindowSize = screenBufferInfo.srWindow;
+					COORD prev = drawingArea.BufferCoords;
+					drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
 
-						hcgui::EVENT_INFO *new_event = new hcgui::EVENT_INFO();
-						new_event->EventType = hcgui::EventType::BufferAreaResized;
-						new_event->bufferAreaResized.previousSize = prev;
-						new_event->bufferAreaResized.newSize = drawingArea.BufferCoords;
-						scheduleEvent(new_event);
-						isDone = true;
-					}
+					hcgui::EVENT_INFO *new_event = new hcgui::EVENT_INFO();
+					new_event->EventType = hcgui::EventType::BufferAreaResized;
+					new_event->bufferAreaResized.previousSize = prev;
+					new_event->bufferAreaResized.newSize = drawingArea.BufferCoords;
+					scheduleEvent(new_event);
 				}
 			}
 

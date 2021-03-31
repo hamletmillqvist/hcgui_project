@@ -83,7 +83,7 @@ bool LinkedList::addNode(LINKED_NODE *p_node)
         {
             p_tail = p_node;
             p_head = p_node;
-            true;
+            return true;
             counter++;
         }
 
@@ -142,7 +142,6 @@ bool LinkedList::removeNode(LINKED_NODE *p_node)
                     // Next node is the target
                     if (current_node->p_Next == p_node)
                     {
-                        printf("Found node during deletion process!\n");
                         // Link Node before target to the one after the target.
                         current_node->p_Next = p_node->p_Next;
 
@@ -201,10 +200,10 @@ uint32_t LinkedList::getCount() const
     return this->counter;
 }
 
+#ifdef DEBUG_BUILD
 void LinkedList::printList() const
 {
     printf("Size: %d {\n", this->counter);
-
     for (NodeIterator iterator = getIterator(); iterator.hasNext(); iterator.forward())
     {
         LINKED_NODE *p_node = iterator.getNode();
@@ -212,3 +211,9 @@ void LinkedList::printList() const
     }
     printf("}\n");
 }
+#else
+void LinkedList::printList() const
+{
+    return; // removes warning for empty method
+}
+#endif

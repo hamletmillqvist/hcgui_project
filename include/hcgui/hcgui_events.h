@@ -3,23 +3,26 @@
 
 namespace hcgui
 {
+    // Identification for different kinds of events.
     enum EventType
     {
-        // Input events
+        // =============== Input events ===============
 
         KeyPress,
         MousePress,
         MouseMovement,
 
-        // Window events
+        // =============== Window events ===============
 
         WindowClosed,
         WindowMoved,
         WindowResized,
 
-        // Instance events
+        // =============== Instance events ===============
 
         BufferAreaResized,
+
+        // =============== CONSTANT, THIS IT NOT EVENT TYPE ===============
 
         // Amount of available event types.
         EVENT_TYPE_COUNT,

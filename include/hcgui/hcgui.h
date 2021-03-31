@@ -20,7 +20,7 @@ namespace hcgui
 	// Destroys the HCGUI instance. Make sure to do this last.
 	extern "C" DLL void destroyInstance();
 
-	// checkInstance will return TRUE if HCGUI is initialized and has not been destroyed.
+	// Returns TRUE if HCGUI is initialized and has not been destroyed.
 	extern "C" DLL bool checkInstance();
 
 	// Retreives the last recorded error message.

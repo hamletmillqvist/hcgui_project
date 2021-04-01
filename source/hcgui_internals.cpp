@@ -18,6 +18,7 @@ namespace hcgui
 		0};
 
 	LinkedList eventQueue;
+	LinkedList frameList;
 	hcgui::EventHandler *p_eventHandlers = nullptr;
 
 	void setError(const char *error_message)
@@ -97,31 +98,32 @@ namespace hcgui
 		}
 
 		eventQueue = LinkedList();
+		frameList = LinkedList();
 
 		// Launch internal thread
 		t_internalThread = std::thread(threadStart);
 		return true;
 	}
 
-	void invokeEvent(hcgui::EVENT_INFO event_info)
+	void invokeEvent(hcgui::EventInfo event_info)
 	{
 		hcgui::EventHandler handler = p_eventHandlers[(int)event_info.EventType];
 		handler.triggerEvent(event_info);
 	}
 
-	void scheduleEvent(hcgui::EVENT_INFO *event_info)
+	void scheduleEvent(hcgui::EventInfo *event_info)
 	{
 		eventQueue.emplaceNode(event_info);
 	}
 
-	bool pollEvents(hcgui::EVENT_INFO *event_out)
+	bool pollEvents(hcgui::EventInfo *event_out)
 	{
 		// If queue is not empty
 		if (eventQueue.getCount() > 0)
 		{
 			// Read node at head and extract object
 			LINKED_NODE *event_node = eventQueue.getHead();
-			hcgui::EVENT_INFO *node_obj = (hcgui::EVENT_INFO *)event_node->p_Object;
+			hcgui::EventInfo *node_obj = (hcgui::EventInfo *)event_node->p_Object;
 
 			// Copy event information into the out parameter
 			*event_out = *node_obj;
@@ -137,8 +139,19 @@ namespace hcgui
 		return false;
 	}
 
+	void writeToDrawArea(hcgui::DRAWING_AREA drawingArea)
+	{
+		// TODO : Draw onto the main drawing area
+	}
+
 	void onDraw()
 	{
+		for (NodeIterator node_iterator = frameList.getIterator(); node_iterator.hasNext(); node_iterator.forward())
+		{
+			FRAME_HANDLE handle = (FRAME_HANDLE)node_iterator.getObject();
+			writeToDrawArea(handle->makeDrawable()); // TODO : Move frames to front should be possible
+		}
+
 		COORD buffer_origin = {0, 0};
 		SMALL_RECT writeArea = {0, 0, drawingArea.BufferCoords.X, (SHORT)(drawingArea.BufferCoords.Y)};
 
@@ -153,7 +166,7 @@ namespace hcgui
 
 	void threadStart() // <- t_internalThread starts here
 	{
-		hcgui::EVENT_INFO event;
+		hcgui::EventInfo event;
 		CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
 		uint32_t num = 0;
 
@@ -169,10 +182,10 @@ namespace hcgui
 					COORD prev = drawingArea.BufferCoords;
 					drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
 
-					hcgui::EVENT_INFO *new_event = new hcgui::EVENT_INFO();
+					hcgui::EventInfo *new_event = new hcgui::EventInfo();
 					new_event->EventType = hcgui::EventType::BufferAreaResized;
-					new_event->bufferAreaResized.previousSize = prev;
-					new_event->bufferAreaResized.newSize = drawingArea.BufferCoords;
+					new_event->Data.bufferAreaResized.previousSize = prev;
+					new_event->Data.bufferAreaResized.newSize = drawingArea.BufferCoords;
 					scheduleEvent(new_event);
 				}
 			}
@@ -187,7 +200,7 @@ namespace hcgui
 				// Handle internal events
 				else
 				{
-					hcgui::CreateWindowsPopup("Not Implemented", "Internal events have not been implemented!");
+					hcgui::createWindowsPopup("Not Implemented", "Internal events have not been implemented!");
 				}
 			}
 			onDraw();

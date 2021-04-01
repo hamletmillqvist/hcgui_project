@@ -15,9 +15,9 @@ namespace hcgui
     public:
         EventHandler(hcgui::EventType event_type);
         ~EventHandler();
-        uint32_t addSubscriber(bool (*CALLBACK_ADDR)(hcgui::EVENT_INFO));
+        uint32_t addSubscriber(bool (*CALLBACK_ADDR)(hcgui::EventInfo));
         void removeSubscriber(uint32_t subscriber_id);
 
-        void triggerEvent(hcgui::EVENT_INFO event_info);
+        void triggerEvent(hcgui::EventInfo event_info);
     };
 }

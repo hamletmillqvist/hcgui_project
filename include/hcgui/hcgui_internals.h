@@ -33,6 +33,9 @@ namespace hcgui
 	// Initial cursor starting position when launchin the instance.
 	extern COORD cursorStartPosition;
 
+	// Contains all frames created (active & inactive)
+	extern LinkedList frameList;
+
 	// Buffer containing old buffer contents before launching the application.
 	extern char *p_oldBufferContents;
 
@@ -60,13 +63,13 @@ namespace hcgui
 	extern hcgui::EventHandler *p_eventHandlers;
 
 	// Triggers event, invoking all subscriber calls.
-	void triggerEvent(hcgui::EVENT_INFO event_info);
+	void triggerEvent(hcgui::EventInfo event_info);
 
 	// Add new event to the event queue. Event will be triggered on the next polling loop.
-	void scheduleEvent(hcgui::EVENT_INFO event_info);
+	void scheduleEvent(hcgui::EVENT_HANDLE event_handle);
 
 	// Poll the next event in the queue.
-	bool pollEvents(hcgui::EVENT_INFO *event_out);
+	bool pollEvents(hcgui::EventInfo *event_out);
 
 	// Sets last error message to the passed argument string
 	void setError(const char *error_message);
@@ -76,6 +79,8 @@ namespace hcgui
 
 	// Internal loop-method used by the t_internalThread.
 	void threadStart();
+
+	void writeToDrawArea(hcgui::DRAWING_AREA drawingArea);
 
 	// Draws the DRAWING_AREA.p_CellBuffer onto the screen each frame.
 	void onDraw();

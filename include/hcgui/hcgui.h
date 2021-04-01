@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <stdint.h>
 #include "hcgui_internals.h"
+#include "frame.h"
 
 #ifndef DLLDIR_EX
 #define DLL __declspec(dllexport)
@@ -16,6 +17,9 @@ namespace hcgui
 
 	// Creates the HCGUI instance. This should be called at the start before any other methods.
 	extern "C" DLL SystemState createInstance();
+
+	// Creates a new frame in the instance.
+	DLL FRAME_HANDLE createFrame(FRAME_HANDLE parent, const char *p_title, SMALL_RECT rect);
 
 	// Destroys the HCGUI instance. Make sure to do this last.
 	extern "C" DLL void destroyInstance();
@@ -36,11 +40,11 @@ namespace hcgui
 	extern "C" DLL SystemState setCursorPosition(int16_t posX, int16_t posY);
 
 	// Add a new subscriber (observer) to an event handler. callback_addr needs to be the function called on event trigger. Returns a callback_id
-	extern "C" DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO));
+	extern "C" DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EventInfo));
 
 	// Removes a subscriber (observer) from an event handler. Second arguments needs to be the id of the subscriber to remove.
 	extern "C" DLL void removeEventSubscriber(hcgui::EventType eventType, uint32_t callback_id);
 
 	// Windows only function that creatues a normal popup window with a title and message. Mostly used for debugging right now.
-	extern "C" DLL void CreateWindowsPopup(const char *title, const char *message);
+	extern "C" DLL void createWindowsPopup(const char *title, const char *message);
 }

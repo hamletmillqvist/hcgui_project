@@ -5,7 +5,13 @@
 
 namespace hcgui
 {
-	DLL void CreateWindowsPopup(const char *title, const char *message)
+	DLL FRAME_HANDLE createFrame(FRAME_HANDLE p_owner, const char *p_title, SMALL_RECT rect)
+	{
+		FRAME_HANDLE frame = new Frame(p_owner, p_title);
+		frame->setRect(rect);
+	}
+
+	DLL void createWindowsPopup(const char *title, const char *message)
 	{
 		MessageBoxA(NULL, message, title, MB_OK);
 	}
@@ -108,7 +114,7 @@ namespace hcgui
 		return SystemState::OK;
 	}
 
-	DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EVENT_INFO))
+	DLL uint32_t addEventSubscriber(hcgui::EventType eventType, bool (*callback_addr)(hcgui::EventInfo))
 	{
 		if (!checkInstance())
 		{

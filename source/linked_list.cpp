@@ -1,73 +1,14 @@
 #include "linked_list.h"
 #include <stdio.h>
 
-LINKED_NODE::LINKED_NODE()
-{
-    p_Object = nullptr;
-    p_Next = nullptr;
-}
-
-LINKED_NODE::LINKED_NODE(void *p_obj)
-{
-    p_Object = p_obj;
-    p_Next = nullptr;
-}
-
-/* =========================== NODE ITERATOR =========================== */
-
-NodeIterator::NodeIterator(LINKED_NODE *start)
-    : p_current(start), counter(0)
-{
-}
-
-LINKED_NODE *NodeIterator::getNode()
-{
-    return p_current;
-}
-
-void *NodeIterator::getObject()
-{
-    return p_current != nullptr ? p_current->p_Object : nullptr;
-}
-
-bool NodeIterator::hasNext() const
-{
-    // Current is not null
-    if (p_current != nullptr)
-    {
-        // If started counting and next exists OR we're still on counter 0
-        if (counter == 0 || (counter > 0 && p_current->p_Next != nullptr))
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool NodeIterator::forward()
-{
-    // If not already at end
-    if (p_current != nullptr)
-    {
-        if (counter > 0)
-        {
-            p_current = p_current->p_Next;
-        }
-        counter++;
-    }
-    return false;
-}
-
-/* =========================== LINKED LIST =========================== */
-
 LinkedList::LinkedList()
-    : p_tail(nullptr), p_head(nullptr), counter(0)
+    : p_tail(nullptr), p_head(nullptr), elementCount(0)
 {
 }
 
 LinkedList::~LinkedList()
 {
-    while (this->counter > 0)
+    while (this->elementCount > 0)
     {
         removeNode(p_head);
     }
@@ -79,12 +20,12 @@ bool LinkedList::addNode(LINKED_NODE *p_node)
     if (p_node != nullptr)
     {
         // If list is empty
-        if (counter == 0)
+        if (elementCount == 0)
         {
             p_tail = p_node;
             p_head = p_node;
             return true;
-            counter++;
+            elementCount++;
         }
 
         // otherwise, does not already exist in the list
@@ -92,7 +33,7 @@ bool LinkedList::addNode(LINKED_NODE *p_node)
         {
             p_tail->p_Next = p_node;
             return true;
-            counter++;
+            elementCount++;
         }
     }
 
@@ -114,7 +55,7 @@ bool LinkedList::emplaceNode(void *p_object)
 bool LinkedList::removeNode(LINKED_NODE *p_node)
 {
     // Argument not null and list is not empty
-    if (p_node != nullptr && counter > 0)
+    if (p_node != nullptr && elementCount > 0)
     {
         // If target node is the head
         if (p_head = p_node)
@@ -128,7 +69,7 @@ bool LinkedList::removeNode(LINKED_NODE *p_node)
             }
 
             delete p_node;
-            counter--;
+            elementCount--;
             return true;
         }
         else
@@ -156,8 +97,8 @@ bool LinkedList::removeNode(LINKED_NODE *p_node)
                         p_node->p_Object = nullptr;
                         delete p_node;
 
-                        // End the loop and decrement the counter
-                        counter--;
+                        // End the loop and decrement the elementCount
+                        elementCount--;
                         done = true;
                     }
                 }
@@ -197,17 +138,21 @@ bool LinkedList::containsNode(LINKED_NODE *p_node) const
 
 uint32_t LinkedList::getCount() const
 {
-    return this->counter;
+    return this->elementCount;
 }
 
 #ifdef DEBUG_BUILD
 void LinkedList::printList() const
 {
-    printf("Size: %d {\n", this->counter);
-    for (NodeIterator iterator = getIterator(); iterator.hasNext(); iterator.forward())
+    printf("Size: %d {\n", this->elementCount);
+    // Prevents infinite loop
+    if (this->elementCount > 0)
     {
-        LINKED_NODE *p_node = iterator.getNode();
-        printf("(Adr: %p, Obj: %p, Nxt: )\n", p_node, p_node->p_Object, p_node->p_Next);
+        for (NodeIterator iterator = getIterator(); iterator.hasNext(); iterator.forward())
+        {
+            LINKED_NODE *p_node = iterator.getNode();
+            printf("(Adr: %p, Obj: %p, Nxt: )\n", p_node, p_node->p_Object, p_node->p_Next);
+        }
     }
     printf("}\n");
 }

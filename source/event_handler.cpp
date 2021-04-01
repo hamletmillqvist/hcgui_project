@@ -14,7 +14,7 @@ namespace hcgui
         this->subscribers.~LinkedList();
     }
 
-    uint32_t hcgui::EventHandler::addSubscriber(bool (*callback_addr)(hcgui::EVENT_INFO))
+    uint32_t hcgui::EventHandler::addSubscriber(bool (*callback_addr)(hcgui::EventInfo))
     {
         this->lastSubscriberId++;
 
@@ -44,9 +44,8 @@ namespace hcgui
         }
     }
 
-    void hcgui::EventHandler::triggerEvent(hcgui::EVENT_INFO event_info)
+    void hcgui::EventHandler::triggerEvent(hcgui::EventInfo event_info)
     {
-        subscribers.printList();
         bool event_pass_forward = true;
         NodeIterator iterator = this->subscribers.getIterator();
 

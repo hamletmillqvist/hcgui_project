@@ -4,17 +4,6 @@
 #include <string>
 #include "hcgui/hcgui.h"
 
-bool OnBufferResized(hcgui::EVENT_INFO event_info)
-{
-	std::stringstream ss;
-	COORD old_size = event_info.bufferAreaResized.previousSize;
-	COORD new_size = event_info.bufferAreaResized.newSize;
-	ss << "Previous size: (" << old_size.X << ";" << old_size.Y << ")\nNew size: (" << new_size.X << ";" << new_size.Y << ")";
-
-	hcgui::CreateWindowsPopup("Buffer was resized!", ss.str().c_str());
-	return true;
-}
-
 int main(int argc, char **argv)
 {
 	if (hcgui::createInstance() == hcgui::SystemState::Error)
@@ -23,8 +12,7 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	// id is used to unsubscribe at a later point
-	DWORD subscription_id = hcgui::addEventSubscriber(hcgui::EventType::BufferAreaResized, &OnBufferResized);
+	FRAME_HANDLE my_frame = hcgui::createFrame(nullptr, "MyFrame", {5, 5, 10, 6});
 
 	while (hcgui::checkInstance())
 	{
@@ -32,12 +20,11 @@ int main(int argc, char **argv)
 		{
 			std::stringstream ss;
 			ss << "HCGUI Error caught: " << hcgui::getError();
-			hcgui::CreateWindowsPopup("Buffer was resized!", ss.str().c_str());
+			hcgui::createWindowsPopup("Buffer was resized!", ss.str().c_str());
 			hcgui::resetError();
 		}
 	}
 
-	hcgui::removeEventSubscriber(hcgui::EventType::BufferAreaResized, subscription_id);
 	hcgui::destroyInstance();
 	printf("Shutting down...\n");
 	return 0;

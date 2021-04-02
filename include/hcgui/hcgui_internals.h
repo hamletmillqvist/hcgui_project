@@ -40,7 +40,7 @@ namespace hcgui
 	extern char *p_oldBufferContents;
 
 	// Cell drawing area data
-	struct DRAWING_AREA
+	struct DrawingArea
 	{
 		// Last stored window state
 		SMALL_RECT WindowSize;
@@ -56,7 +56,7 @@ namespace hcgui
 	};
 
 	// Buffer that contains cell information the be drawn onto the console.
-	extern hcgui::DRAWING_AREA drawingArea;
+	extern hcgui::DrawingArea drawingArea;
 	// Linked list of events pending to be invoked by the correct event handlers.
 	extern LinkedList eventQueue;
 	// Array of event handler objects that invokes events for all subscribers.
@@ -80,9 +80,11 @@ namespace hcgui
 	// Internal loop-method used by the t_internalThread.
 	void threadStart();
 
-	void writeToDrawArea(hcgui::DRAWING_AREA drawingArea);
+	void writeToDrawArea(hcgui::DrawingArea drawing);
 
-	// Draws the DRAWING_AREA.p_CellBuffer onto the screen each frame.
+	void clearDrawingArea();
+
+	// Draws the DrawingArea.p_CellBuffer onto the screen each frame.
 	void onDraw();
 
 	// Method called from threadStart() when a change in window-size is detected.

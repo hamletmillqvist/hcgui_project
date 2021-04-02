@@ -1,5 +1,7 @@
 #include "hcgui/hcgui_internals.h"
 #include "hcgui/hcgui.h"
+#include <string>
+#include <sstream>
 
 namespace hcgui
 {
@@ -11,7 +13,7 @@ namespace hcgui
 	char *p_oldBufferContents = nullptr;
 	std::thread t_internalThread;
 
-	hcgui::DRAWING_AREA drawingArea = {
+	hcgui::DrawingArea drawingArea = {
 		{0, 0, 0, 0},
 		nullptr,
 		{0, 0},
@@ -80,13 +82,8 @@ namespace hcgui
 		}
 		hcgui::setCursorPosition(0, 0);
 
-		for (int i = 0; i < drawingArea.BufferLenght; i++)
-		{
-			drawingArea.p_Buffer[i].Char.UnicodeChar = ' ';
-			drawingArea.p_Buffer[i].Attributes =
-				FOREGROUND_INTENSITY | FOREGROUND_RED |
-				BACKGROUND_BLUE;
-		}
+		// Initializes the drawing area with default settings
+		clearDrawingArea();
 
 		// Create event handlers for all possible events to poll
 		size_t memsize = sizeof(hcgui::EventHandler) * hcgui::EventType::EVENT_TYPE_COUNT;
@@ -139,13 +136,37 @@ namespace hcgui
 		return false;
 	}
 
-	void writeToDrawArea(hcgui::DRAWING_AREA drawingArea)
+	void writeToDrawArea(hcgui::DrawingArea drawing)
 	{
-		// TODO : Draw onto the main drawing area
+		// We want to read all data from drawing and apply all data from absolute X and Y positions.
+		for (int16_t y = 0; y < drawing.BufferCoords.Y; y++)
+		{
+			for (int16_t x = 0; x < drawing.BufferCoords.X; x++)
+			{
+				int16_t totY = y + drawing.WindowSize.Top,
+						totX = x + drawing.WindowSize.Left;
+
+				hcgui::drawingArea.p_Buffer[totY * hcgui::drawingArea.BufferCoords.X + totX] = drawing.p_Buffer[y * drawing.BufferCoords.X + x];
+			}
+		}
+	}
+
+	void clearDrawingArea()
+	{
+		for (uint16_t i = 0; i < drawingArea.BufferLenght; i++)
+		{
+			// TODO : We're using hard coded values. Replace with constant variables or some form of setting later.
+			drawingArea.p_Buffer[i].Char.UnicodeChar = ' ';
+			drawingArea.p_Buffer[i].Attributes =
+				FOREGROUND_INTENSITY | FOREGROUND_RED |
+				BACKGROUND_BLUE;
+		}
 	}
 
 	void onDraw()
 	{
+		clearDrawingArea();
+
 		for (NodeIterator node_iterator = frameList.getIterator(); node_iterator.hasNext(); node_iterator.forward())
 		{
 			FRAME_HANDLE handle = (FRAME_HANDLE)node_iterator.getObject();
@@ -178,15 +199,15 @@ namespace hcgui
 				if (screenBufferInfo.srWindow.Right != drawingArea.WindowSize.Right ||
 					screenBufferInfo.srWindow.Bottom != drawingArea.WindowSize.Bottom)
 				{
-					drawingArea.WindowSize = screenBufferInfo.srWindow;
-					COORD prev = drawingArea.BufferCoords;
-					drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
+					//drawingArea.WindowSize = screenBufferInfo.srWindow;
+					//COORD prev = drawingArea.BufferCoords;
+					//drawingArea.BufferCoords = {(short)(drawingArea.WindowSize.Right + 1), (short)(drawingArea.WindowSize.Bottom + 1)};
 
-					hcgui::EventInfo *new_event = new hcgui::EventInfo();
-					new_event->EventType = hcgui::EventType::BufferAreaResized;
-					new_event->Data.bufferAreaResized.previousSize = prev;
-					new_event->Data.bufferAreaResized.newSize = drawingArea.BufferCoords;
-					scheduleEvent(new_event);
+					//hcgui::EventInfo *new_event = new hcgui::EventInfo();
+					//new_event->EventType = hcgui::EventType::BufferAreaResized;
+					//new_event->Data.bufferAreaResized.previousSize = prev;
+					//new_event->Data.bufferAreaResized.newSize = drawingArea.BufferCoords;
+					//scheduleEvent(new_event);
 				}
 			}
 

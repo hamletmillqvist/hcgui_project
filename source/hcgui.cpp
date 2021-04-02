@@ -9,6 +9,10 @@ namespace hcgui
 	{
 		FRAME_HANDLE frame = new Frame(p_owner, p_title);
 		frame->setRect(rect);
+
+		hcgui::frameList.emplaceNode(frame);
+
+		return frame;
 	}
 
 	DLL void createWindowsPopup(const char *title, const char *message)

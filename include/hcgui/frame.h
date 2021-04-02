@@ -14,6 +14,7 @@ namespace hcgui
     const SMALL_RECT FRAME_DEFAULT_RECT{0, 0, 10, 10};
     const uint16_t FRAME_DEFAULT_BACKGROUND_ATTRIBUTES = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | FOREGROUND_INTENSITY,
                    FRAME_DEFAULT_TITLEBAR_ATTRIBUTES = BACKGROUND_BLUE | BACKGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_INTENSITY;
+    const uint8_t FRAME_TITLEBAR_HEIGHT = 1;
 
     class Frame
     {
@@ -32,5 +33,7 @@ namespace hcgui
 
         SMALL_RECT getRect() const;
         void setRect(SMALL_RECT new_rect);
+
+        hcgui::DrawingArea makeDrawable();
     };
 }

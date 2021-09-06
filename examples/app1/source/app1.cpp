@@ -13,6 +13,7 @@ int main(int argc, char **argv)
 	}
 
 	FRAME_HANDLE my_frame = hcgui::createFrame(nullptr, "MyFrame", {5, 5, 10, 6});
+	hcgui::createFrame(nullptr, "2nd Frame", {20, 20, 10, 6});
 
 	while (hcgui::checkInstance())
 	{

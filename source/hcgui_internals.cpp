@@ -146,7 +146,18 @@ namespace hcgui
 				int16_t totY = y + drawing.WindowSize.Top,
 						totX = x + drawing.WindowSize.Left;
 
-				hcgui::drawingArea.p_Buffer[totY * hcgui::drawingArea.BufferCoords.X + totX] = drawing.p_Buffer[y * drawing.BufferCoords.X + x];
+				CHAR_INFO drawing_char = drawing.p_Buffer[y * drawing.BufferCoords.X + x];
+				CHAR_INFO *p_targetChar = hcgui::drawingArea.p_Buffer + (totY * hcgui::drawingArea.BufferCoords.X + totX);
+
+				// Some branchless programming, we're multipying both options with the bool, which is technically an if-statement just without CPU branching!
+				bool shouldskip = (drawing_char.Char.UnicodeChar == '\n');
+				drawing_char.Attributes = (shouldskip * p_targetChar->Attributes) + // option 1: skip
+										  (!shouldskip * drawing_char.Attributes);	// option 2: not skip
+
+				drawing_char.Char.UnicodeChar = (shouldskip * p_targetChar->Char.UnicodeChar) + // option 1: skip
+												(!shouldskip * drawing_char.Char.UnicodeChar);	// option 2: not skip
+
+				*p_targetChar = drawing_char;
 			}
 		}
 	}

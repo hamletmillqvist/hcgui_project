@@ -4,8 +4,8 @@
 class LinkedList // Linked list utilizing the LINKED_NODE structure.
 {
 private:
-    LINKED_NODE *p_head,
-        *p_tail;
+    LINKED_NODE *p_first,
+        *p_last;
 
     uint32_t elementCount;
 
@@ -23,7 +23,7 @@ public:
     LINKED_NODE *getHead();
 
     // Returns the address of the last node in the list.
-    LINKED_NODE *getTail();
+    LINKED_NODE *getLast();
 
     // Returns an iterator of the linked list
     NodeIterator getIterator() const;

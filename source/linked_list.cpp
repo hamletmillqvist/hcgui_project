@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 LinkedList::LinkedList()
-    : p_tail(nullptr), p_head(nullptr), elementCount(0)
+    : p_last(nullptr), p_first(nullptr), elementCount(0)
 {
 }
 
@@ -10,7 +10,7 @@ LinkedList::~LinkedList()
 {
     while (this->elementCount > 0)
     {
-        removeNode(p_head);
+        removeNode(p_first);
     }
 }
 
@@ -22,18 +22,21 @@ bool LinkedList::addNode(LINKED_NODE *p_node)
         // If list is empty
         if (elementCount == 0)
         {
-            p_tail = p_node;
-            p_head = p_node;
-            return true;
+            // Place node at the start and update both "first" and "last" pointers to use the new node.
+            p_last = p_node;
+            p_first = p_node;
             elementCount++;
+            return true;
         }
 
         // otherwise, does not already exist in the list
-        if (!containsNode(p_node))
+        else if (!containsNode(p_node))
         {
-            p_tail->p_Next = p_node;
-            return true;
+            // Place new node after the last one, then move the "last"-pointer to the new node.
+            p_last->p_Next = p_node;
+            p_last = p_node;
             elementCount++;
+            return true;
         }
     }
 
@@ -45,6 +48,7 @@ bool LinkedList::emplaceNode(void *p_object)
     // Argument not null
     if (p_object != nullptr)
     {
+        // Wrap object pointer inside a new linked node.
         LINKED_NODE *p_node = new LINKED_NODE(p_object);
         addNode(p_node);
         return true;
@@ -57,15 +61,15 @@ bool LinkedList::removeNode(LINKED_NODE *p_node)
     // Argument not null and list is not empty
     if (p_node != nullptr && elementCount > 0)
     {
-        // If target node is the head
-        if (p_head = p_node)
+        // If target node is the first node
+        if (p_first = p_node)
         {
-            p_head = nullptr;
+            p_first = nullptr;
 
-            // If it is also the tail
-            if (p_tail == p_node)
+            // If it is also the last node
+            if (p_last == p_node)
             {
-                p_tail = nullptr;
+                p_last = nullptr;
             }
 
             delete p_node;
@@ -80,16 +84,24 @@ bool LinkedList::removeNode(LINKED_NODE *p_node)
                 LINKED_NODE *current_node = iterator.getNode();
                 if (current_node != nullptr)
                 {
-                    // Next node is the target
+                    // If next node is the target
                     if (current_node->p_Next == p_node)
                     {
-                        // Link Node before target to the one after the target.
-                        current_node->p_Next = p_node->p_Next;
-
-                        // If the target node is the tail, move tail backwards one step
-                        if (p_tail == p_node)
+                        // If next node is not the last node, then hook current node to the one after next.
+                        if (p_last != p_node)
                         {
-                            current_node = p_tail;
+                            // Link Node before target to the one after the target. Steps are as follows:
+                            // (A) -> (B) -> (C)
+                            // (A) & (B) -> C
+                            current_node->p_Next = p_node->p_Next;
+                        }
+
+                        // Otherwise, if the target node is the last node.
+                        if (p_last == p_node)
+                        {
+                            // Move the last-node-pointer to the current node instead, then set current.next to be null
+                            p_last = current_node;
+                            current_node->p_Next = nullptr;
                         }
 
                         // Clean up original node data to more easily perform error checking
@@ -111,17 +123,17 @@ bool LinkedList::removeNode(LINKED_NODE *p_node)
 
 LINKED_NODE *LinkedList::getHead()
 {
-    return this->p_head;
+    return this->p_first;
 }
 
-LINKED_NODE *LinkedList::getTail()
+LINKED_NODE *LinkedList::getLast()
 {
-    return this->p_tail;
+    return this->p_last;
 }
 
 NodeIterator LinkedList::getIterator() const
 {
-    return NodeIterator(this->p_head);
+    return NodeIterator(this->p_first);
 }
 
 bool LinkedList::containsNode(LINKED_NODE *p_node) const
@@ -138,7 +150,7 @@ bool LinkedList::containsNode(LINKED_NODE *p_node) const
 
 uint32_t LinkedList::getCount() const
 {
-    return this->elementCount;
+    return elementCount;
 }
 
 #ifdef DEBUG_BUILD

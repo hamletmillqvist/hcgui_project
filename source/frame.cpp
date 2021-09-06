@@ -40,36 +40,50 @@ namespace hcgui
     {
         // TODO : Cache last calculated drawable and only recalculate on change?
 
-        COORD size = {this->rect.Right, this->rect.Bottom};
+        COORD size = {this->rect.Right + 1, this->rect.Bottom + 1};
         uint16_t lenght = size.X * size.Y;
         CHAR_INFO *p_buffer = (CHAR_INFO *)malloc(sizeof(CHAR_INFO) * lenght);
 
         CHAR_INFO c;
+        c.Attributes = 0;
+        c.Char.UnicodeChar = '\n';
+        for (uint32_t i = 0; i < lenght; i++)
+            p_buffer[i] = c;
 
         // We use seperate for-loops independently for title and background, instead of using a single for-loop with IF-statements inside.
         // This is actually faster.
 
-        // Draw titlebar
-        uint8_t titleLenght = strlen(this->title), counter = 0;
-        c.Attributes = this->titlebarAttributes;
-        for (int16_t y = 0; y < FRAME_TITLEBAR_HEIGHT; y++)
+        // Draw frame background
+        c.Attributes = this->backgroundAttribues;
+        c.Char.UnicodeChar = ' ';
+
+        for (int16_t y = 0; y < size.Y - 1; y++)
         {
-            for (int16_t x = 0; x < size.X; x++)
+            for (int16_t x = 0; x < size.X - 1; x++)
             {
-                c.Char.UnicodeChar = counter < titleLenght ? this->title[counter++] : ' '; // TODO : Still thinking of better way to solve this, preferably without conditions inside loop
                 p_buffer[y * size.X + x] = c;
             }
         }
 
-        // Draw frame background
-        c.Char.UnicodeChar = ' ';
-        c.Attributes = this->backgroundAttribues;
-        for (int16_t y = FRAME_TITLEBAR_HEIGHT; y < size.Y; y++)
+        // Apply title text
+        size_t title_lenght = strlen(this->title);
+        for (int16_t x = 1; x < size.X && x - 1 < title_lenght; x++)
         {
-            for (int16_t x = 0; x < size.X; x++)
-            {
-                p_buffer[y * size.X + x] = c;
-            }
+            c.Char.UnicodeChar = this->title[x - 1];
+            p_buffer[x] = c;
+        }
+
+        // If shadows are applicable, draw them
+        c.Attributes = FRAME_DEFAULT_SHADOW_ATTRIBUTES;
+        c.Char.UnicodeChar = ' ';
+        const short right = size.X - 1;
+        for (int16_t y = 1; y < size.Y; y++)
+        {
+            p_buffer[y * size.X + right] = c;
+        }
+        for (int16_t x = 1; x < size.X - 1; x++)
+        {
+            p_buffer[(size.Y - 1) * size.X + x] = c;
         }
 
         // Assemble DrawingArea structure and return it
@@ -78,6 +92,8 @@ namespace hcgui
         drawing.BufferLenght = lenght;
         drawing.p_Buffer = p_buffer;
         drawing.WindowSize = this->rect;
+        drawing.WindowSize.Right = size.X;
+        drawing.WindowSize.Bottom = size.Y;
         return drawing;
     }
 }
